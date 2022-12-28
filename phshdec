@@ -1,0 +1,67 @@
+import requests
+import tldextract
+import ssl
+import os
+from pyfiglet import Figlet
+
+# List of known phishing domains
+phishing_domains = ['phishing', 'fake']
+
+# Create the PHSHDEC ASCII logo using pyfiglet
+f = Figlet(font='slant')
+logo = f.renderText('PHSHDEC')
+
+def is_phishing(url):
+  # Make an HTTP request to the website
+  try:
+    response = requests.get(url)
+    content_type = response.headers['Content-Type']
+  except:
+    return True
+
+  # Check the Content-Type header
+  if 'text/html' not in content_type:
+    return True
+
+  # Use tldextract to check the domain of the URL
+  extracted = tldextract.extract(url)
+  domain = extracted.domain
+  if domain in phishing_domains:
+    return True
+
+  # Check the SSL certificate of the website
+  try:
+    context = ssl.create_default_context()
+    ssl_socket = context.wrap_socket(response.raw, server_hostname=url)
+    certificate = ssl_socket.getpeercert()
+  except:
+    return True
+
+  # Check if the SSL certificate is valid and not expired
+  if not certificate or ssl.cert_time_to_seconds(certificate['notAfter>
+    return True
+
+  return False
+
+# Clear the terminal
+os.system('clear')
+
+# Display the PHSHDEC logo
+print(logo)
+
+# Prompt the user to enter a URL
+url = input("Enter a URL: ")
+
+# Clear the terminal
+os.system('clear')
+
+# Display the PHSHDEC logo
+print(logo)
+
+# Check if the URL is a phishing link
+result = is_phishing(url)
+
+if result:
+  print("This URL is a phishing link.")
+else:
+ print("This URL is not a phishing link.")
